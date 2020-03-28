@@ -13,8 +13,13 @@ app.use(express.static(path.join(__dirname, 'static')));
 app.use(cors);
 
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
+    // res.sendFile(path.join(__dirname, 'index.html'));
+    res.sendFile(path.join(__dirname+'/client/build/index.html'));
 });
+
+// app.get('/react', (req, res) => {
+//     res.sendFile(path.join(__dirname+'/client/build/index.html'));
+// });
 
 app.post('/test', upload.array('audios', 2), (req, res, next) => {
     // req.files is array of audio files
@@ -22,6 +27,10 @@ app.post('/test', upload.array('audios', 2), (req, res, next) => {
     res.json({files: req.files.length});
 
     // req.body will hold the text fields, if there were any
+});
+
+app.get('/daniel', (req, res) => {
+    res.json({message: "hello there, itsa me"});
 });
 
 app.listen(port, () => {
