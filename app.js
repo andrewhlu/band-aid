@@ -6,15 +6,14 @@ const path = require('path');
 const cors = require('cors')({origin: true});
 
 const app = express();
-const port = process.env.PORT || 8080;
+const port = process.env.PORT || 5000;
 const upload = multer();
 
-app.use(express.static(path.join(__dirname, 'static')));
+app.use(express.static(path.join(__dirname, '/client/build')));
 app.use(cors);
 
 app.get('/', (req, res) => {
-    // res.sendFile(path.join(__dirname, 'index.html'));
-    res.sendFile(path.join(__dirname+'/client/build/index.html'));
+    res.sendFile(path.join(__dirname + 'index.html'));
 });
 
 // app.get('/react', (req, res) => {
