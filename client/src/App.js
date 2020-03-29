@@ -1,26 +1,28 @@
 import React from 'react';
-import logo from './logo.svg';
+import { Switch, Route, BrowserRouter as Router } from 'react-router-dom'
+
 import './App.css';
 import UploadPage from "./components/UploadPage";
+import TestPage from "./components/TestPage";
+import Conductor from "./components/conductor/Conductor";
 
 function App() {
   return (
     <div className="App">
-      <UploadPage/>
-      {/*<header className="App-header">*/}
-      {/*  <img src={logo} className="App-logo" alt="logo" />*/}
-      {/*  <p>*/}
-      {/*    Edit <code>src/App.js</code> and save to reload.*/}
-      {/*  </p>*/}
-      {/*  <a*/}
-      {/*    className="App-link"*/}
-      {/*    href="https://reactjs.org"*/}
-      {/*    target="_blank"*/}
-      {/*    rel="noopener noreferrer"*/}
-      {/*  >*/}
-      {/*    Learn React*/}
-      {/*  </a>*/}
-      {/*</header>*/}
+      <div className="w-75 p-3"
+           style={{
+             backgroundColor: '#eee',
+             margin: '0 auto',
+             height: '95vh'
+           }}>
+      <Router>
+        <Switch>
+          <Route path="/conductor" component={Conductor} />
+          <Route exact path="/testpage" component={TestPage} />
+          <Route exact path="/" component={UploadPage} />
+        </Switch>
+      </Router>
+      </div>
     </div>
   );
 }
