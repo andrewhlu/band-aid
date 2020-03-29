@@ -1,5 +1,6 @@
 const admin = require('firebase-admin');
 const express = require('express');
+const bodyParser = require('body-parser')
 const multer = require('multer');
 const ffmpeg = require('fluent-ffmpeg');
 // const axios = require('axios');
@@ -16,6 +17,8 @@ admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
     storageBucket: "band-aid-music.appspot.com"
 });
+
+const storageBucket = admin.storage().bucket();
 
 // Multer Setup. See: https://github.com/expressjs/multer/issues/170
 const storage = multer.diskStorage({
@@ -34,37 +37,95 @@ const upload = multer({ storage: storage });
 const app = express();
 const port = process.env.PORT || 5000;
 app.use(express.static(path.join(__dirname, '/client/build')));
+app.use(bodyParser.urlencoded({ extended: true })); 
 app.use(cors);
 
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname + '/index.html'));
 });
 
-app.post('/test', upload.array('audios', 20), (req, res, next) => {
-    // req.files is array of audio files
-    console.log(req.files);
-
-    // Use ffmpeg to merge files. See: https://stackoverflow.com/questions/14498539/how-to-overlay-downmix-two-audio-files-using-ffmpeg
-    let command = ffmpeg();
-    for (var i = 0; i < req.files.length; i++) {
-        command.input(req.files[i].path);
-    }
-    command.addInputOption("-filter_complex amix=inputs=" + req.files.length + ":duration=longest");
-    command.output('tmp/output.' + mime.getExtension(req.files[0].mimetype));
-    command.on('error', (err) => {
-        console.log('An error occurred: ' + err.message);
-    });
-    command.on('end', () => {
-        console.log('Processing finished!');
-
-        fs.readdir("tmp", (err, items) => {
-            console.log(items);
-            res.json({ file: path.join(__dirname + "/tmp/output." + mime.getExtension(req.files[0].mimetype)) });
-        });
-    });
-    command.run();
+app.post('/upload', upload.single('audio'), (req, res, next) => {
+    // req.file contains the file
+    console.log(req.file);
 
     // req.body will hold the text fields, if there were any
+    req.body = JSON.parse(JSON.stringify(req.body));
+    if(req.body.hasOwnProperty("key")) {
+        let key = req.body.key.toUpperCase();
+        console.log(key);
+
+        // Upload file to the directory specified by the key
+        let options = {
+            destination: key + "/" + req.file.filename
+        };
+
+        storageBucket.upload(req.file.path, options, (err, file) => {
+            if(err) {
+                console.log(error);
+                res.json({ success: false });
+            }
+            else {
+                // File was successfully uploaded!
+                // console.log(file);
+                res.json({ success: true });
+            }
+        });
+    }
+    else {
+        // No key was provided, return an error
+        res.json({ error: "No key was provided." });
+    }
+});
+
+app.post('/merge', (req, res) => {
+    // req.body will hold the text fields, if there were any
+    if(req.body.hasOwnProperty("key")) {
+        let key = req.body.key.toUpperCase();
+        console.log(key);
+
+        let options = {
+            directory: key
+        };
+
+        storageBucket.getFiles(options, (err, files) => {
+            if(err) {
+                console.log(error);
+                res.json({ success: false });
+            }
+            else {
+                console.log(files);
+                res.json({ success: true });
+            }
+        })
+
+
+
+
+        // // Use ffmpeg to merge files. See: https://stackoverflow.com/questions/14498539/how-to-overlay-downmix-two-audio-files-using-ffmpeg
+        // let command = ffmpeg();
+        // for (var i = 0; i < req.files.length; i++) {
+        //     command.input(req.files[i].path);
+        // }
+        // command.addInputOption("-filter_complex amix=inputs=" + req.files.length + ":duration=longest");
+        // command.output('tmp/output.' + mime.getExtension(req.files[0].mimetype));
+        // command.on('error', (err) => {
+        //     console.log('An error occurred: ' + err.message);
+        // });
+        // command.on('end', () => {
+        //     console.log('Processing finished!');
+
+        //     // Upload the completed file
+        //     fs.readdir("tmp", (err, items) => {
+        //         console.log(items);
+        //         res.json({ file: path.join(__dirname + "/tmp/output." + mime.getExtension(req.files[0].mimetype)) });
+        //     });
+        // });
+        // command.run();
+    }
+    else {
+        // No key was provided, return an error
+        res.json({ error: "No key was provided." });
+    }
 });
 
 app.listen(port, () => {
