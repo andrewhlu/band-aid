@@ -11,7 +11,7 @@ const cors = require('cors')({ origin: true });
 const fs = require('fs');
 
 // Firebase Admin SDK Setup
-const serviceAccount = require("./serviceAccountKey.json");
+const serviceAccount = process.env.FIREBASE_SERVICE_ACCT || require("./serviceAccountKey.json");
 
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
