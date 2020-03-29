@@ -38,6 +38,7 @@ function EnterRoom(props) {
 
   }
   return (
+
     <div className="EnterRoom">
       <form onSubmit={handleSubmit(onSubmit)}>
         <input type="text" placeholder="room id (1-10 chars)" name="room_id" ref={register({required: true, maxLength: 10, minLength: 4})} />

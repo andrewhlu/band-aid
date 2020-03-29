@@ -14,7 +14,8 @@ function Student(props) {
         <Switch>
           {/*<Route exact path="/student" component={CreateRoom}/>*/}
           <Route exact path="/student/recording/:id"
-                 render={() => <RecordingPage {...props} />}
+                 // render={() => <RecordingPage {...props} />}
+                 render={(p) => <RecordingPage {...p} {...props}/>}
           />
           <Route exact path="/student/enterroom"
                  render={() => <EnterRoom {...props}/>}

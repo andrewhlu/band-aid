@@ -18,6 +18,7 @@ var firebaseConfig = {
   appId: "1:336491551539:web:37a2c759fec6e42c9cfc46"
 };
 firebase.initializeApp(firebaseConfig);
+const database = firebase.database();
 function App() {
 
   return (
@@ -32,11 +33,11 @@ function App() {
         <Switch>
           <Route path="/conductor"
                  render={() => {
-                   return <Conductor firebase={firebase} />
+                   return <Conductor firebase={firebase} database={database}/>
                  }}/>
           <Route path="/student"
                  render={() => {
-                    return <Student firebase={firebase} />
+                    return <Student firebase={firebase} database={database} />
                  }}/>
           <Route exact path="/testpage" component={TestPage} />
           <Route exact path="/" component={UploadPage} />
