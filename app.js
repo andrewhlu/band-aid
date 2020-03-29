@@ -8,7 +8,6 @@ const path = require('path');
 const crypto = require('crypto');
 const mime = require('mime');
 const cors = require('cors')({ origin: true });
-const fs = require('fs');
 
 // Firebase Admin SDK Setup
 const serviceAccount = process.env.FIREBASE_SERVICE_ACCT || require("./serviceAccountKey.json");
@@ -66,7 +65,6 @@ app.post('/upload', upload.single('audio'), (req, res, next) => {
             }
             else {
                 // File was successfully uploaded!
-                // console.log(file);
                 res.json({ success: true });
             }
         });
@@ -89,38 +87,93 @@ app.post('/merge', (req, res) => {
 
         storageBucket.getFiles(options, (err, files) => {
             if(err) {
-                console.log(error);
-                res.json({ success: false });
+                console.log(err);
+                res.json({ success: false, error: err });
             }
             else {
-                console.log(files);
-                res.json({ success: true });
+                // We now have an array of file objects in 'files'. Download each one.
+                // First, create an array of booleans to keep track of file download progress for each one
+                let downloadProgress = new Array(files.length).fill(false);
+
+                for(let i = 0; i < files.length; i++) {
+                    let options = {
+                        destination: "tmp/" + files[i].id
+                    };
+
+                    files[i].download(options, (err, contents) => {
+                        if(err) {
+                            console.log(err);
+                            res.json({ success: false, error: err });
+                        }
+                        else {
+                            downloadProgress[i] = true;
+                            console.log(i);
+                            console.log(downloadProgress);
+                        }
+                    });
+                }
+
+                let checker = arr => arr.every(Boolean);
+
+                let downloadCheck = setInterval(() => {
+                    if(checker(downloadProgress)) {
+                        clearInterval(downloadCheck);
+                        console.log("Files are downloaded!");
+
+                        // Use ffmpeg to merge files. See: https://stackoverflow.com/questions/14498539/how-to-overlay-downmix-two-audio-files-using-ffmpeg
+                        let command = ffmpeg();
+                        for (let i = 0; i < files.length; i++) {
+                            console.log("tmp/" + files[i].id);
+                            command.input("tmp/" + files[i].id);
+                        }
+                        command.addInputOption("-filter_complex amix=inputs=" + files.length + ":duration=longest");
+                        command.output("tmp/output.wav");
+                        // command.output('tmp/output.' + mime.getExtension(files[0].metadata.contentType));
+                        command.on('error', (err) => {
+                            console.log('An error occurred: ' + err.message);
+                        });
+                        command.on('end', () => {
+                            console.log('Processing finished!');
+
+                            // Upload file to the directory specified by the key
+                            let options = {
+                                destination: key + "/output.wav"
+                            };
+
+                            storageBucket.upload("tmp/output.wav", options, (err, file) => {
+                                if(err) {
+                                    console.log(error);
+                                    res.json({ success: false, error: err });
+                                }
+                                else {
+                                    console.log("File was uploaded!");
+
+                                    // Get a download link and set expiration time to tomorrow
+                                    let today = new Date();
+
+                                    let options = {
+                                        action: 'read',
+                                        expires: today.getTime() + 86400000
+                                    };
+
+                                    file.getSignedUrl(options, (err, url) => {
+                                        if(err) {
+                                            console.log(err);
+                                            res.json({ success: false, error: err });
+                                        }
+                                        else {
+                                            console.log(url);
+                                            res.json({ success: true, url: url });
+                                        }
+                                    });
+                                }
+                            });
+                        });
+                        command.run();
+                    }
+                }, 100);
             }
-        })
-
-
-
-
-        // // Use ffmpeg to merge files. See: https://stackoverflow.com/questions/14498539/how-to-overlay-downmix-two-audio-files-using-ffmpeg
-        // let command = ffmpeg();
-        // for (var i = 0; i < req.files.length; i++) {
-        //     command.input(req.files[i].path);
-        // }
-        // command.addInputOption("-filter_complex amix=inputs=" + req.files.length + ":duration=longest");
-        // command.output('tmp/output.' + mime.getExtension(req.files[0].mimetype));
-        // command.on('error', (err) => {
-        //     console.log('An error occurred: ' + err.message);
-        // });
-        // command.on('end', () => {
-        //     console.log('Processing finished!');
-
-        //     // Upload the completed file
-        //     fs.readdir("tmp", (err, items) => {
-        //         console.log(items);
-        //         res.json({ file: path.join(__dirname + "/tmp/output." + mime.getExtension(req.files[0].mimetype)) });
-        //     });
-        // });
-        // command.run();
+        });
     }
     else {
         // No key was provided, return an error
