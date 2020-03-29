@@ -14,7 +14,7 @@ const fs = require('fs');
 const serviceAccount = process.env.FIREBASE_SERVICE_ACCT || require("./serviceAccountKey.json");
 
 admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
+    credential: admin.credential.cert(process.env.FIREBASE_SERVICE_ACCT ? JSON.parse(serviceAccount) : serviceAccount),
     storageBucket: "band-aid-music.appspot.com"
 });
 
