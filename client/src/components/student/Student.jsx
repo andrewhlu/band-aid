@@ -2,7 +2,9 @@ import React from 'react';
 import { Switch, Route, BrowserRouter as Router } from 'react-router-dom'
 import Error404 from "../Error404";
 import RecordingPage from "./RecordingPage";
-function Student() {
+import CreateRoom from "../conductor/CreateRoom";
+import EnterRoom from "./EnterRoom";
+function Student(props) {
 
   return (
     <div className="Student">
@@ -11,7 +13,12 @@ function Student() {
 
         <Switch>
           {/*<Route exact path="/student" component={CreateRoom}/>*/}
-          <Route exact path="/student/recording" component={RecordingPage}/>
+          <Route exact path="/student/recording/:id"
+                 render={() => <RecordingPage {...props} />}
+          />
+          <Route exact path="/student/enterroom"
+                 render={() => <EnterRoom {...props}/>}
+          />
           <Route component={Error404} />
         </Switch>
       </Router>

@@ -46,4 +46,25 @@
       To create a production bundle, use `npm run build` or `yarn build`.
     -->
   </body>
+
+
+
+  <!-- The core Firebase JS SDK is always required and must be listed first -->
+  <script src="https://www.gstatic.com/firebasejs/7.13.1/firebase-app.js"></script>
+  <!-- TODO: Add SDKs for Firebase products that you want to use
+       https://firebase.google.com/docs/web/setup#available-libraries -->
+  <script>
+    // Your web app's Firebase configuration
+    var firebaseConfig = {
+      apiKey: "AIzaSyAs_ffWjHjzmPXeL_CkYKo5YkgZJbV3NSk",
+      authDomain: "band-aid-music.firebaseapp.com",
+      databaseURL: "https://band-aid-music.firebaseio.com",
+      projectId: "band-aid-music",
+      storageBucket: "band-aid-music.appspot.com",
+      messagingSenderId: "336491551539",
+      appId: "1:336491551539:web:37a2c759fec6e42c9cfc46"
+    };
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+  </script>
 </html>

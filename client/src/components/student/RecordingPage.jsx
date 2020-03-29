@@ -3,8 +3,19 @@ import React, {useState, useEffect} from 'react';
 import MicRecorder from 'mic-recorder-to-mp3';
 
 const Mp3Recorder = new MicRecorder({ bitRate: 128 });
-function RecordingPage() {
+// var firebaseConfig = {
+//   apiKey: "AIzaSyAs_ffWjHjzmPXeL_CkYKo5YkgZJbV3NSk",
+//   authDomain: "band-aid-music.firebaseapp.com",
+//   databaseURL: "https://band-aid-music.firebaseio.com",
+//   projectId: "band-aid-music",
+//   storageBucket: "band-aid-music.appspot.com",
+//   messagingSenderId: "336491551539",
+//   appId: "1:336491551539:web:37a2c759fec6e42c9cfc46"
+// };
 
+function RecordingPage(props) {
+
+  const [roomId, setRoomId] = useState(props.roomId);
   const [isRecording, setIsRecording] = useState(false);
   const [blobURL, setBlobURL] = useState('');
   const [isBlocked, setIsBlocked] = useState(false);
