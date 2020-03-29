@@ -31,18 +31,11 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname + '/index.html'));
 });
 
-// app.get('/react', (req, res) => {
-//     res.sendFile(path.join(__dirname+'/client/build/index.html'));
-// });
-
 app.post('/test', upload.array('audios', 20), (req, res, next) => {
     // req.files is array of audio files
     console.log(req.files);
-    // res.json({files: req.files.length});
 
-
-    // Set up ffmpeg to merge
-    // See: https://stackoverflow.com/questions/14498539/how-to-overlay-downmix-two-audio-files-using-ffmpeg
+    // Use ffmpeg to merge files. See: https://stackoverflow.com/questions/14498539/how-to-overlay-downmix-two-audio-files-using-ffmpeg
     let command = ffmpeg();
     for(var i = 0; i < req.files.length; i++) {
         command.input(req.files[i].path);
@@ -63,10 +56,6 @@ app.post('/test', upload.array('audios', 20), (req, res, next) => {
     command.run();
 
     // req.body will hold the text fields, if there were any
-});
-
-app.get('/daniel', (req, res) => {
-    res.json({message: "hello there, itsa me"});
 });
 
 app.listen(port, () => {
