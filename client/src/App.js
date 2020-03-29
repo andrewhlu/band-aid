@@ -5,6 +5,7 @@ import './App.css';
 import UploadPage from "./components/UploadPage";
 import TestPage from "./components/TestPage";
 import Conductor from "./components/conductor/Conductor";
+import Student from "./components/student/Student";
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
       <Router>
         <Switch>
           <Route path="/conductor" component={Conductor} />
+          <Route path="/student" component={Student} />
           <Route exact path="/testpage" component={TestPage} />
           <Route exact path="/" component={UploadPage} />
         </Switch>
