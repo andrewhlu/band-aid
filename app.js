@@ -11,7 +11,6 @@ const fs = require('fs');
 
 const app = express();
 const port = process.env.PORT || 5000;
-const command = ffmpeg();
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -29,22 +28,39 @@ app.use(express.static(path.join(__dirname, '/client/build')));
 app.use(cors);
 
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname + 'index.html'));
+    res.sendFile(path.join(__dirname + '/index.html'));
 });
 
 // app.get('/react', (req, res) => {
 //     res.sendFile(path.join(__dirname+'/client/build/index.html'));
 // });
 
-app.post('/test', upload.array('audios', 2), (req, res, next) => {
+app.post('/test', upload.array('audios', 20), (req, res, next) => {
     // req.files is array of audio files
     console.log(req.files);
     // res.json({files: req.files.length});
 
-    fs.readdir("tmp", (err, items) => {
-        console.log(items);
-        res.json(items);
+
+    // Set up ffmpeg to merge
+    // See: https://stackoverflow.com/questions/14498539/how-to-overlay-downmix-two-audio-files-using-ffmpeg
+    let command = ffmpeg();
+    for(var i = 0; i < req.files.length; i++) {
+        command.input(req.files[i].path);
+    }
+    command.addInputOption("-filter_complex amix=inputs=" + req.files.length + ":duration=longest");
+    command.output('tmp/output.' + mime.getExtension(req.files[0].mimetype));
+    command.on('error', (err) => {
+        console.log('An error occurred: ' + err.message);
     });
+    command.on('end', () => {
+        console.log('Processing finished !');
+
+        fs.readdir("tmp", (err, items) => {
+            console.log(items);
+            res.json({ file: path.join(__dirname + "/tmp/output." + mime.getExtension(req.files[0].mimetype)) });
+        });
+    });
+    command.run();
 
     // req.body will hold the text fields, if there were any
 });
