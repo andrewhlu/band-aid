@@ -116,3 +116,6 @@ dist
 
 # Temp directory for storing files
 tmp/
+
+# Firebase Service Account Key
+serviceAccountKey.json

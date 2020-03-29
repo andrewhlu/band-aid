@@ -1,17 +1,23 @@
-// const admin = require('firebase-admin');
+const admin = require('firebase-admin');
 const express = require('express');
-const multer  = require('multer');
+const multer = require('multer');
 const ffmpeg = require('fluent-ffmpeg');
 // const axios = require('axios');
 const path = require('path');
 const crypto = require('crypto');
 const mime = require('mime');
-const cors = require('cors')({origin: true});
+const cors = require('cors')({ origin: true });
 const fs = require('fs');
 
-const app = express();
-const port = process.env.PORT || 5000;
+// Firebase Admin SDK Setup
+const serviceAccount = require("./serviceAccountKey.json");
 
+admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+    storageBucket: "band-aid-music.appspot.com"
+});
+
+// Multer Setup. See: https://github.com/expressjs/multer/issues/170
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
         cb(null, 'tmp/')
@@ -24,6 +30,9 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage: storage });
 
+// Express Setup
+const app = express();
+const port = process.env.PORT || 5000;
 app.use(express.static(path.join(__dirname, '/client/build')));
 app.use(cors);
 
@@ -37,7 +46,7 @@ app.post('/test', upload.array('audios', 20), (req, res, next) => {
 
     // Use ffmpeg to merge files. See: https://stackoverflow.com/questions/14498539/how-to-overlay-downmix-two-audio-files-using-ffmpeg
     let command = ffmpeg();
-    for(var i = 0; i < req.files.length; i++) {
+    for (var i = 0; i < req.files.length; i++) {
         command.input(req.files[i].path);
     }
     command.addInputOption("-filter_complex amix=inputs=" + req.files.length + ":duration=longest");
@@ -46,7 +55,7 @@ app.post('/test', upload.array('audios', 20), (req, res, next) => {
         console.log('An error occurred: ' + err.message);
     });
     command.on('end', () => {
-        console.log('Processing finished !');
+        console.log('Processing finished!');
 
         fs.readdir("tmp", (err, items) => {
             console.log(items);
